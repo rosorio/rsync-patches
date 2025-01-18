@@ -365,3 +365,51 @@ diff --git a/rsync.1.md b/rsync.1.md
  0.  `--suffix=SUFFIX`
  
      This option allows you to override the default backup suffix used with the
+diff -Nurp a/rsync.1 b/rsync.1
+--- a/rsync.1
++++ b/rsync.1
+@@ -529,7 +529,9 @@ has its own detailed description later i
+ --backup, -b             make backups (see --suffix & --backup-dir)
+ --backup-deleted         make backups only of deleted files
+ --backup-dir=DIR         make backups into hierarchy based in DIR
++--backup-dir-dels=DIR    backup removed files into hierarchy based in DIR
+ --suffix=SUFFIX          backup suffix (default ~ w/o --backup-dir)
++--suffix-dels=SUFFIX     set removed-files suffix (def. --suffix w/o b-d-d)
+ --update, -u             skip files that are newer on the receiver
+ --inplace                update destination files in-place
+ --append                 append data onto shorter files
+@@ -1126,6 +1128,9 @@ relative to the destination directory, s
+ either an absolute path or a path that starts with "../".  If an rsync
+ daemon is the receiver, the backup dir cannot go outside the module's path
+ hierarchy, so take extra care not to delete it or copy into it.
++.IP "\fB\-\-backup-dir-dels=DIR\fP"
++Works like \fB\-\-backup-dir\fP except for deleted files in conjunction
++with the \fB\-\-backup-deleted\fP option.
+ .IP "\fB\-\-suffix=SUFFIX\fP"
+ This option allows you to override the default backup suffix used with the
+ \fB\-\-backup\fP (\fB\-b\fP) option.  The default suffix is a \fB~\fP if no
+diff -Nurp a/rsync.1.html b/rsync.1.html
+--- a/rsync.1.html
++++ b/rsync.1.html
+@@ -422,7 +422,9 @@ has its own detailed description later i
+ --backup, -b             make backups (see --suffix &amp; --backup-dir)
+ --backup-deleted         make backups only of deleted files
+ --backup-dir=DIR         make backups into hierarchy based in DIR
++--backup-dir-dels=DIR    backup removed files into hierarchy based in DIR
+ --suffix=SUFFIX          backup suffix (default ~ w/o --backup-dir)
++--suffix-dels=SUFFIX     set removed-files suffix (def. --suffix w/o b-d-d)
+ --update, -u             skip files that are newer on the receiver
+ --inplace                update destination files in-place
+ --append                 append data onto shorter files
+@@ -998,6 +1000,11 @@ daemon is the receiver, the backup dir c
+ hierarchy, so take extra care not to delete it or copy into it.</p>
+ </dd>
+ 
++<dt id="opt--backup-dir-dels"><code>--backup-dir-dels=DIR</code><a href="#opt--backup-dir-dels" class="tgt"></a></dt><dd>
++<p>Works like <a href="#opt--backup-dir"><code>--backup-dir</code></a> except for deleted files in conjunction
++with the <a href="#opt--backup-deleted"><code>--backup-deleted</code></a> option.</p>
++</dd>
++
+ <dt id="opt--suffix"><code>--suffix=SUFFIX</code><a href="#opt--suffix" class="tgt"></a></dt><dd>
+ <p>This option allows you to override the default backup suffix used with the
+ <a href="#opt--backup"><code>--backup</code></a> (<code>-b</code>) option.  The default suffix is a <code>~</code> if no

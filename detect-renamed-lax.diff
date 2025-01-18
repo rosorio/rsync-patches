@@ -121,3 +121,65 @@ diff --git a/rsync.1.md b/rsync.1.md
  0.  `--compare-dest=DIR`
  
      This option instructs rsync to use _DIR_ on the destination machine as an
+diff -Nurp a/rsync.1 b/rsync.1
+--- a/rsync.1
++++ b/rsync.1
+@@ -607,6 +607,8 @@ has its own detailed description later i
+ --temp-dir=DIR, -T       create temporary files in directory DIR
+ --fuzzy, -y              find similar file for basis if no dest file
+ --detect-renamed         try to find renamed files to speed the xfer
++--detect-renamed-lax     ...& assume identical to src files (risky!)
++--detect-moved           ... only if basenames match (less risky)
+ --compare-dest=DIR       also compare destination files relative to DIR
+ --copy-dest=DIR          ... and include copies of unchanged files
+ --link-dest=DIR          hardlink to files in DIR when unchanged
+@@ -2718,6 +2720,16 @@ By default, alternate-basis files are ha
+ \fB\-\-partial-dir\fP option, that directory will be used instead.  These
+ otential alternate-basis files will be removed as the transfer progresses.
+ This option conflicts with \fB\-\-inplace\fP and \fB\-\-append\fP.
++.IP "\fB\-\-detect-renamed-lax\fP"
++This version of \fB\-\-detect-renamed\fP makes rsync hard-link \fBdest/D\fP
++to \fBdest/S\fP without verifying that \fBsrc/S\fP and \fBdest/S\fP have the same data.
++This poses a significant risk of corrupting the destination by representing
++a new source file by an unrelated destination file that coincidentally
++passes the quick check with the source file.  Use this option only if you
++accept the risk and disk I/O is a bottleneck.
++.IP "\fB\-\-detect-moved\fP"
++A less risky variant of \fB\-\-detect-renamed-lax\fP that only uses a
++destination file that has the same basename as the new source file.
+ .IP "\fB\-\-compare-dest=DIR\fP"
+ This option instructs rsync to use \fIDIR\fP on the destination machine as an
+ additional hierarchy to compare destination files against doing transfers
+diff -Nurp a/rsync.1.html b/rsync.1.html
+--- a/rsync.1.html
++++ b/rsync.1.html
+@@ -500,6 +500,8 @@ has its own detailed description later i
+ --temp-dir=DIR, -T       create temporary files in directory DIR
+ --fuzzy, -y              find similar file for basis if no dest file
+ --detect-renamed         try to find renamed files to speed the xfer
++--detect-renamed-lax     ...&amp; assume identical to src files (risky!)
++--detect-moved           ... only if basenames match (less risky)
+ --compare-dest=DIR       also compare destination files relative to DIR
+ --copy-dest=DIR          ... and include copies of unchanged files
+ --link-dest=DIR          hardlink to files in DIR when unchanged
+@@ -2486,6 +2488,20 @@ otential alternate-basis files will be r
+ This option conflicts with <a href="#opt--inplace"><code>--inplace</code></a> and <a href="#opt--append"><code>--append</code></a>.</p>
+ </dd>
+ 
++<dt id="opt--detect-renamed-lax"><code>--detect-renamed-lax</code><a href="#opt--detect-renamed-lax" class="tgt"></a></dt><dd>
++<p>This version of <a href="#opt--detect-renamed"><code>--detect-renamed</code></a> makes rsync hard-link <code>dest/D</code>
++to <code>dest/S</code> without verifying that <code>src/S</code> and <code>dest/S</code> have the same data.
++This poses a significant risk of corrupting the destination by representing
++a new source file by an unrelated destination file that coincidentally
++passes the quick check with the source file.  Use this option only if you
++accept the risk and disk I/O is a bottleneck.</p>
++</dd>
++
++<dt id="opt--detect-moved"><code>--detect-moved</code><a href="#opt--detect-moved" class="tgt"></a></dt><dd>
++<p>A less risky variant of <a href="#opt--detect-renamed-lax"><code>--detect-renamed-lax</code></a> that only uses a
++destination file that has the same basename as the new source file.</p>
++</dd>
++
+ <dt id="opt--compare-dest"><code>--compare-dest=DIR</code><a href="#opt--compare-dest" class="tgt"></a></dt><dd>
+ <p>This option instructs rsync to use <u>DIR</u> on the destination machine as an
+ additional hierarchy to compare destination files against doing transfers

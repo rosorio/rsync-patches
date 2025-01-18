@@ -12,7 +12,7 @@ To use this patch, run these commands for a successful build:
     ./configure
     make
 
-based-on: 6c8ca91c731b7bf2b081694bda85b7dadc2b7aff
+based-on: 3305a7a063ab0167cab5bf7029da53abaa9fdb6e
 diff --git a/Makefile.in b/Makefile.in
 --- a/Makefile.in
 +++ b/Makefile.in
@@ -24,7 +24,7 @@ diff --git a/Makefile.in b/Makefile.in
 +OBJS3=progress.o pipe.o hashlink.o @MD5_ASM@ @ROLL_SIMD@ @ROLL_ASM@
  DAEMON_OBJ = params.o loadparm.o clientserver.o access.o connection.o authenticate.o
  popt_OBJS=popt/findme.o  popt/popt.o  popt/poptconfig.o \
- 	popt/popthelp.o popt/poptparse.o
+ 	popt/popthelp.o popt/poptparse.o popt/poptint.o
 diff --git a/checksum.c b/checksum.c
 --- a/checksum.c
 +++ b/checksum.c
@@ -373,7 +373,7 @@ diff --git a/rsync.c b/rsync.c
  extern int sanitize_paths;
  extern struct file_list *cur_flist, *first_flist, *dir_flist;
  extern struct chmod_mode_struct *daemon_chmod_modes;
-@@ -760,6 +761,10 @@ int finish_transfer(const char *fname, const char *fnametmp,
+@@ -763,6 +764,10 @@ int finish_transfer(const char *fname, const char *fnametmp,
  	}
  	if (ret == 0) {
  		/* The file was moved into place (not copied), so it's done. */
@@ -387,7 +387,7 @@ diff --git a/rsync.c b/rsync.c
 diff --git a/rsync.h b/rsync.h
 --- a/rsync.h
 +++ b/rsync.h
-@@ -1446,7 +1446,8 @@ extern short info_levels[], debug_levels[];
+@@ -1449,7 +1449,8 @@ extern short info_levels[], debug_levels[];
  #define DEBUG_FUZZY (DEBUG_FLIST+1)
  #define DEBUG_GENR (DEBUG_FUZZY+1)
  #define DEBUG_HASH (DEBUG_GENR+1)
@@ -424,3 +424,593 @@ diff --git a/rsyncd.conf.5.md b/rsyncd.conf.5.md
  0.  `log file`
  
      When the "log file" parameter is set to a non-empty string, the rsync
+diff -Nurp a/rrsync.1 b/rrsync.1
+--- a/rrsync.1
++++ b/rrsync.1
+@@ -1,176 +0,0 @@
+-.TH "rrsync" "1" "15 Jan 2025" "rrsync from rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
+-.P
+-.SH "NAME"
+-.P
+-rrsync \- a script to setup restricted rsync users via ssh logins
+-.P
+-.SH "SYNOPSIS"
+-.P
+-.nf
+-rrsync [-ro|-wo] [-munge] [-no-del] [-no-lock] [-no-overwrite]  DIR
+-.fi
+-.P
+-The single non-option argument specifies the restricted \fIDIR\fP to use. It can be
+-relative to the user's home directory or an absolute path.
+-.P
+-The online version of this manpage (that includes cross-linking of topics)
+-is available at
+-.UR https://download.samba.org/pub/rsync/rrsync.1
+-.UE .
+-.P
+-.SH "DESCRIPTION"
+-.P
+-A user's ssh login can be restricted to only allow the running of an rsync
+-transfer in one of two easy ways:
+-.P
+-.IP o
+-forcing the running of the rrsync script
+-.IP o
+-forcing the running of an rsync daemon-over-ssh command.
+-.P
+-Both of these setups use a feature of ssh that allows a command to be forced to
+-run instead of an interactive shell.  However, if the user's home shell is bash,
+-please see BASH SECURITY ISSUE for a potential issue.
+-.P
+-To use the rrsync script, edit the user's \fB~/.ssh/authorized_keys\fP file and add
+-a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:
+-.RS 4
+-.P
+-.nf
+-command="rrsync DIR"
+-command="rrsync -ro DIR"
+-command="rrsync -munge -no-del DIR"
+-.fi
+-.RE
+-.P
+-Then, ensure that the rrsync script has your desired option restrictions. You
+-may want to copy the script to a local bin dir with a unique name if you want
+-to have multiple configurations. One or more rrsync options can be specified
+-prior to the \fIDIR\fP if you want to further restrict the transfer.
+-.P
+-To use an rsync daemon setup, edit the user's \fB~/.ssh/authorized_keys\fP file and
+-add a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:
+-.RS 4
+-.P
+-.nf
+-command="rsync --server --daemon ."
+-command="rsync --server --daemon --config=/PATH/TO/rsyncd.conf ."
+-.fi
+-.RE
+-.P
+-Then, ensure that the rsyncd.conf file is created with one or more module names
+-with the appropriate path and option restrictions.  If rsync's
+-\fB\-\-config\fP option is omitted, it defaults to \fB~/rsyncd.conf\fP.
+-See the \fBrsyncd.conf\fP(5) manpage for details of how to
+-configure an rsync daemon.
+-.P
+-When using rrsync, there can be just one restricted dir per authorized key.  A
+-daemon setup, on the other hand, allows multiple module names inside the config
+-file, each one with its own path setting.
+-.P
+-The remainder of this manpage is dedicated to using the rrsync script.
+-.P
+-.SH "OPTIONS"
+-.P
+-.IP "\fB\-ro\fP"
+-Allow only reading from the DIR. Implies \fB\-no-del\fP and
+-\fB\-no-lock\fP.
+-.IP "\fB\-wo\fP"
+-Allow only writing to the DIR.
+-.IP "\fB\-munge\fP"
+-Enable rsync's \fB\-\-munge-links\fP on the server side.
+-.IP "\fB\-no-del\fP"
+-Disable rsync's \fB\-\-delete*\fP and \fB\-\-remove*\fP options.
+-.IP "\fB\-no-lock\fP"
+-Avoid the single-run (per-user) lock check.  Useful with \fB\-munge\fP.
+-.IP "\fB\-no-overwrite\fP"
+-Enforce \fB\-\-ignore-existing\fP on the server. Prevents overwriting existing
+-files when the server is the receiver.
+-.IP "\fB\-help\fP, \fB\-h\fP"
+-Output this help message and exit.
+-.P
+-.SH "SECURITY RESTRICTIONS"
+-.P
+-The rrsync script validates the path arguments it is sent to try to restrict
+-them to staying within the specified DIR.
+-.P
+-The rrsync script rejects rsync's \fB\-\-copy-links\fP option (by
+-default) so that a copy cannot dereference a symlink within the DIR to get to a
+-file outside the DIR.
+-.P
+-The rrsync script rejects rsync's \fB\-\-protect-args\fP (\fB\-s\fP) option
+-because it would allow options to be sent to the server-side that the script
+-cannot check.  If you want to support \fB\-\-protect-args\fP, use a daemon-over-ssh
+-setup.
+-.P
+-The rrsync script accepts just a subset of rsync's options that the real rsync
+-uses when running the server command.  A few extra convenience options are also
+-included to help it to interact with BackupPC and accept some convenient user
+-overrides.
+-.P
+-The script (or a copy of it) can be manually edited if you want it to customize
+-the option handling.
+-.P
+-.SH "BASH SECURITY ISSUE"
+-.P
+-If your users have bash set as their home shell, bash may try to be overly
+-helpful and ensure that the user's login bashrc files are run prior to
+-executing the forced command.  This can be a problem if the user can somehow
+-update their home bashrc files, perhaps via the restricted copy, a shared home
+-directory, or something similar.
+-.P
+-One simple way to avoid the issue is to switch the user to a simpler shell,
+-such as dash.  When choosing the new home shell, make sure that you're not
+-choosing bash in disguise, as it is unclear if it avoids the security issue.
+-.P
+-Another potential fix is to ensure that the user's home directory is not a
+-shared mount and that they have no means of copying files outside of their
+-restricted directories.  This may require you to force the enabling of symlink
+-munging on the server side.
+-.P
+-A future version of openssh may have a change to the handling of forced
+-commands that allows it to avoid using the user's home shell.
+-.P
+-.SH "EXAMPLES"
+-.P
+-The \fB~/.ssh/authorized_keys\fP file might have lines in it like this:
+-.RS 4
+-.P
+-.nf
+-command="rrsync client/logs" ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAzG...
+-command="rrsync -ro results" ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAmk...
+-.fi
+-.RE
+-.P
+-.SH "FILES"
+-.P
+-~/.ssh/authorized_keys
+-.P
+-.SH "SEE ALSO"
+-.P
+-\fBrsync\fP(1), \fBrsyncd.conf\fP(5)
+-.P
+-.SH "VERSION"
+-.P
+-This manpage is current for version 3.4.1 of rsync.
+-.P
+-.SH "CREDITS"
+-.P
+-rsync is distributed under the GNU General Public License.  See the file
+-COPYING for details.
+-.P
+-An rsync web site is available at
+-.UR https://rsync.samba.org/
+-.UE
+-and its github
+-project is
+-.UR https://github.com/RsyncProject/rsync
+-.UE .
+-.P
+-.SH "AUTHOR"
+-.P
+-The original rrsync perl script was written by Joe Smith.  Many people have
+-later contributed to it.  The python version was created by Wayne Davison.
+diff -Nurp a/rrsync.1.html b/rrsync.1.html
+--- a/rrsync.1.html
++++ b/rrsync.1.html
+@@ -1,169 +0,0 @@
+-<html><head>
+-<title>rrsync(1) manpage</title>
+-<meta charset="UTF-8"/>
+-<link href="https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&display=swap" rel="stylesheet">
+-<style>
+-body {
+-  max-width: 50em;
+-  margin: auto;
+-}
+-body, b, strong, u {
+-  font-family: 'Roboto', sans-serif;
+-}
+-a.tgt { font-face: symbol; font-weight: 400; font-size: 70%; visibility: hidden; text-decoration: none; color: #ddd; padding: 0 4px; border: 0; }
+-a.tgt:after { content: '🔗'; }
+-a.tgt:hover { color: #444; background-color: #eaeaea; }
+-h1:hover > a.tgt, h2:hover > a.tgt, h3:hover > a.tgt, dt:hover > a.tgt { visibility: visible; }
+-code {
+-  font-family: 'Roboto Mono', monospace;
+-  font-weight: bold;
+-  white-space: pre;
+-}
+-pre code {
+-  display: block;
+-  font-weight: normal;
+-}
+-blockquote pre code {
+-  background: #f1f1f1;
+-}
+-dd p:first-of-type {
+-  margin-block-start: 0em;
+-}
+-</style>
+-</head><body>
+-<h2 id="NAME">NAME<a href="#NAME" class="tgt"></a></h2>
+-<p>rrsync -&#8288; a script to setup restricted rsync users via ssh logins</p>
+-<h2 id="SYNOPSIS">SYNOPSIS<a href="#SYNOPSIS" class="tgt"></a></h2>
+-<pre><code>rrsync [-ro|-wo] [-munge] [-no-del] [-no-lock] [-no-overwrite]  DIR
+-</code></pre>
+-<p>The single non-option argument specifies the restricted <u>DIR</u> to use. It can be
+-relative to the user's home directory or an absolute path.</p>
+-<p>The online version of this manpage (that includes cross-linking of topics)
+-is available at <a href="https://download.samba.org/pub/rsync/rrsync.1">https://download.samba.org/pub/rsync/rrsync.1</a>.</p>
+-<h2 id="DESCRIPTION">DESCRIPTION<a href="#DESCRIPTION" class="tgt"></a></h2>
+-<p>A user's ssh login can be restricted to only allow the running of an rsync
+-transfer in one of two easy ways:</p>
+-<ul>
+-<li>forcing the running of the rrsync script</li>
+-<li>forcing the running of an rsync daemon-over-ssh command.</li>
+-</ul>
+-<p>Both of these setups use a feature of ssh that allows a command to be forced to
+-run instead of an interactive shell.  However, if the user's home shell is bash,
+-please see <a href="#BASH_SECURITY_ISSUE">BASH SECURITY ISSUE</a> for a potential issue.</p>
+-<p>To use the rrsync script, edit the user's <code>~/.ssh/authorized_keys</code> file and add
+-a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:</p>
+-<blockquote>
+-<pre><code>command=&quot;rrsync DIR&quot;
+-command=&quot;rrsync -ro DIR&quot;
+-command=&quot;rrsync -munge -no-del DIR&quot;
+-</code></pre>
+-</blockquote>
+-<p>Then, ensure that the rrsync script has your desired option restrictions. You
+-may want to copy the script to a local bin dir with a unique name if you want
+-to have multiple configurations. One or more rrsync options can be specified
+-prior to the <u>DIR</u> if you want to further restrict the transfer.</p>
+-<p>To use an rsync daemon setup, edit the user's <code>~/.ssh/authorized_keys</code> file and
+-add a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:</p>
+-<blockquote>
+-<pre><code>command=&quot;rsync --server --daemon .&quot;
+-command=&quot;rsync --server --daemon --config=/PATH/TO/rsyncd.conf .&quot;
+-</code></pre>
+-</blockquote>
+-<p>Then, ensure that the rsyncd.conf file is created with one or more module names
+-with the appropriate path and option restrictions.  If rsync's
+-<a href="rsync.1#dopt--config"><code>--config</code></a> option is omitted, it defaults to <code>~/rsyncd.conf</code>.
+-See the <a href="rsyncd.conf.5"><strong>rsyncd.conf</strong>(5)</a> manpage for details of how to
+-configure an rsync daemon.</p>
+-<p>When using rrsync, there can be just one restricted dir per authorized key.  A
+-daemon setup, on the other hand, allows multiple module names inside the config
+-file, each one with its own path setting.</p>
+-<p>The remainder of this manpage is dedicated to using the rrsync script.</p>
+-<h2 id="OPTIONS">OPTIONS<a href="#OPTIONS" class="tgt"></a></h2>
+-<dl>
+-
+-<dt id="opt-ro"><code>-ro</code><a href="#opt-ro" class="tgt"></a></dt><dd>
+-<p>Allow only reading from the DIR. Implies <a href="#opt-no-del"><code>-no-del</code></a> and
+-<a href="#opt-no-lock"><code>-no-lock</code></a>.</p>
+-</dd>
+-
+-<dt id="opt-wo"><code>-wo</code><a href="#opt-wo" class="tgt"></a></dt><dd>
+-<p>Allow only writing to the DIR.</p>
+-</dd>
+-
+-<dt id="opt-munge"><code>-munge</code><a href="#opt-munge" class="tgt"></a></dt><dd>
+-<p>Enable rsync's <a href="rsync.1#opt--munge-links"><code>--munge-links</code></a> on the server side.</p>
+-</dd>
+-
+-<dt id="opt-no-del"><code>-no-del</code><a href="#opt-no-del" class="tgt"></a></dt><dd>
+-<p>Disable rsync's <code>--delete*</code> and <code>--remove*</code> options.</p>
+-</dd>
+-
+-<dt id="opt-no-lock"><code>-no-lock</code><a href="#opt-no-lock" class="tgt"></a></dt><dd>
+-<p>Avoid the single-run (per-user) lock check.  Useful with <a href="#opt-munge"><code>-munge</code></a>.</p>
+-</dd>
+-
+-<dt id="opt-no-overwrite"><code>-no-overwrite</code><a href="#opt-no-overwrite" class="tgt"></a></dt><dd>
+-<p>Enforce <code>--ignore-existing</code> on the server. Prevents overwriting existing
+-files when the server is the receiver.</p>
+-</dd>
+-
+-<span id="opt-h"></span><dt id="opt-help"><code>-help</code>, <code>-h</code><a href="#opt-help" class="tgt"></a></dt><dd>
+-<p>Output this help message and exit.</p>
+-</dd>
+-</dl>
+-<h2 id="SECURITY_RESTRICTIONS">SECURITY RESTRICTIONS<a href="#SECURITY_RESTRICTIONS" class="tgt"></a></h2>
+-<p>The rrsync script validates the path arguments it is sent to try to restrict
+-them to staying within the specified DIR.</p>
+-<p>The rrsync script rejects rsync's <a href="rsync.1#opt--copy-links"><code>--copy-links</code></a> option (by
+-default) so that a copy cannot dereference a symlink within the DIR to get to a
+-file outside the DIR.</p>
+-<p>The rrsync script rejects rsync's <a href="rsync.1#opt--protect-args"><code>--protect-args</code></a> (<code>-s</code>) option
+-because it would allow options to be sent to the server-side that the script
+-cannot check.  If you want to support <code>--protect-args</code>, use a daemon-over-ssh
+-setup.</p>
+-<p>The rrsync script accepts just a subset of rsync's options that the real rsync
+-uses when running the server command.  A few extra convenience options are also
+-included to help it to interact with BackupPC and accept some convenient user
+-overrides.</p>
+-<p>The script (or a copy of it) can be manually edited if you want it to customize
+-the option handling.</p>
+-<h2 id="BASH_SECURITY_ISSUE">BASH SECURITY ISSUE<a href="#BASH_SECURITY_ISSUE" class="tgt"></a></h2>
+-<p>If your users have bash set as their home shell, bash may try to be overly
+-helpful and ensure that the user's login bashrc files are run prior to
+-executing the forced command.  This can be a problem if the user can somehow
+-update their home bashrc files, perhaps via the restricted copy, a shared home
+-directory, or something similar.</p>
+-<p>One simple way to avoid the issue is to switch the user to a simpler shell,
+-such as dash.  When choosing the new home shell, make sure that you're not
+-choosing bash in disguise, as it is unclear if it avoids the security issue.</p>
+-<p>Another potential fix is to ensure that the user's home directory is not a
+-shared mount and that they have no means of copying files outside of their
+-restricted directories.  This may require you to force the enabling of symlink
+-munging on the server side.</p>
+-<p>A future version of openssh may have a change to the handling of forced
+-commands that allows it to avoid using the user's home shell.</p>
+-<h2 id="EXAMPLES">EXAMPLES<a href="#EXAMPLES" class="tgt"></a></h2>
+-<p>The <code>~/.ssh/authorized_keys</code> file might have lines in it like this:</p>
+-<blockquote>
+-<pre><code>command=&quot;rrsync client/logs&quot; ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAzG...
+-command=&quot;rrsync -ro results&quot; ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAmk...
+-</code></pre>
+-</blockquote>
+-<h2 id="FILES">FILES<a href="#FILES" class="tgt"></a></h2>
+-<p>~/.ssh/authorized_keys</p>
+-<h2 id="SEE_ALSO">SEE ALSO<a href="#SEE_ALSO" class="tgt"></a></h2>
+-<p><a href="rsync.1"><strong>rsync</strong>(1)</a>, <a href="rsyncd.conf.5"><strong>rsyncd.conf</strong>(5)</a></p>
+-<h2 id="VERSION">VERSION<a href="#VERSION" class="tgt"></a></h2>
+-<p>This manpage is current for version 3.4.1 of rsync.</p>
+-<h2 id="CREDITS">CREDITS<a href="#CREDITS" class="tgt"></a></h2>
+-<p>rsync is distributed under the GNU General Public License.  See the file
+-<a href="COPYING">COPYING</a> for details.</p>
+-<p>An rsync web site is available at <a href="https://rsync.samba.org/">https://rsync.samba.org/</a> and its github
+-project is <a href="https://github.com/RsyncProject/rsync">https://github.com/RsyncProject/rsync</a>.</p>
+-<h2 id="AUTHOR">AUTHOR<a href="#AUTHOR" class="tgt"></a></h2>
+-<p>The original rrsync perl script was written by Joe Smith.  Many people have
+-later contributed to it.  The python version was created by Wayne Davison.</p>
+-<div style="float: right"><p><i>15 Jan 2025</i></p></div>
+-</body></html>
+diff -Nurp a/rsync.1 b/rsync.1
+--- a/rsync.1
++++ b/rsync.1
+@@ -1,5 +1,5 @@
+ .TH "rsync" "1" "15 Jan 2025" "rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
++.\" prefix=/usr/local
+ .P
+ .SH "NAME"
+ .P
+@@ -609,6 +609,7 @@ has its own detailed description later i
+ --compare-dest=DIR       also compare destination files relative to DIR
+ --copy-dest=DIR          ... and include copies of unchanged files
+ --link-dest=DIR          hardlink to files in DIR when unchanged
++--link-by-hash=DIR       create hardlinks by hash into DIR
+ --compress, -z           compress file data during the transfer
+ --compress-choice=STR    choose the compression algorithm (aka --zc)
+ --compress-level=NUM     explicitly set compression level (aka --zl)
+@@ -2786,6 +2787,60 @@ Note that rsync versions prior to 2.6.1
+ \fB\-\-owner\fP (\fB\-o\fP) was specified (or implied).  You can work-around
+ this bug by avoiding the \fB\-o\fP option (or using \fB\-\-no-o\fP) when sending to an
+ old rsync.
++.IP "\fB\-\-link-by-hash=DIR\fP"
++This option hard links the destination files into \fIDIR\fP, a link farm
++arranged by MD5 file hash. The result is that the system will only store
++(usually) one copy of the unique contents of each file, regardless of the
++file's name (it will use extra files if the links overflow the available
++maximum).
++.IP
++This patch does not take into account file permissions, extended
++attributes, or ACLs when linking things together, so you should only use
++this if you don't care about preserving those extra file attributes (or if
++they are always the same for identical files).
++.IP
++The \fIDIR\fP is relative to the destination directory, so either specify a full
++path to the hash hierarchy, or specify a relative path that puts the links
++outside the destination (e.g. "../links").
++.IP
++Keep in mind that the hierarchy is never pruned, so if you need to reclaim
++space, you should remove any files that have just one link (since they are
++not linked into any destination dirs anymore):
++.RS 4
++.IP
++.nf
++find $DIR -links 1 -delete
++.fi
++.RE
++.IP
++The link farm's directory hierarchy is determined by the file's (32-char)
++MD5 hash and the file-length.  The hash is split up into directory shards.
++For example, if a file is 54321 bytes long, it could be stored like this:
++.RS 4
++.IP
++.nf
++$DIR/123/456/789/01234567890123456789012.54321.0
++.fi
++.RE
++.IP
++Note that the directory layout in this patch was modified for version
++3.1.0, so anyone using an older version of this patch should move their
++existing link hierarchy out of the way and then use the newer rsync to copy
++the saved hierarchy into its new layout.  Assuming that no files have
++overflowed their link limits, this would work:
++.RS 4
++.IP
++.nf
++mv $DIR $DIR.old
++rsync -aiv --link-by-hash=$DIR $DIR.old/ $DIR.tmp/
++rm -rf $DIR.tmp
++rm -rf $DIR.old
++.fi
++.RE
++.IP
++If some of your files are at their link limit, you'd be better of using a
++script to calculate the md5 sum of each file in the hierarchy and move it
++to its new location.
+ .IP "\fB\-\-compress\fP, \fB\-z\fP"
+ With this option, rsync compresses the file data as it is sent to the
+ destination machine, which reduces the amount of data being transmitted\ \-\-
+diff -Nurp a/rsync.1.html b/rsync.1.html
+--- a/rsync.1.html
++++ b/rsync.1.html
+@@ -502,6 +502,7 @@ has its own detailed description later i
+ --compare-dest=DIR       also compare destination files relative to DIR
+ --copy-dest=DIR          ... and include copies of unchanged files
+ --link-dest=DIR          hardlink to files in DIR when unchanged
++--link-by-hash=DIR       create hardlinks by hash into DIR
+ --compress, -z           compress file data during the transfer
+ --compress-choice=STR    choose the compression algorithm (aka --zc)
+ --compress-level=NUM     explicitly set compression level (aka --zl)
+@@ -2546,6 +2547,50 @@ this bug by avoiding the <code>-o</code>
+ old rsync.</p>
+ </dd>
+ 
++<dt id="opt--link-by-hash"><code>--link-by-hash=DIR</code><a href="#opt--link-by-hash" class="tgt"></a></dt><dd>
++<p>This option hard links the destination files into <u>DIR</u>, a link farm
++arranged by MD5 file hash. The result is that the system will only store
++(usually) one copy of the unique contents of each file, regardless of the
++file's name (it will use extra files if the links overflow the available
++maximum).</p>
++<p>This patch does not take into account file permissions, extended
++attributes, or ACLs when linking things together, so you should only use
++this if you don't care about preserving those extra file attributes (or if
++they are always the same for identical files).</p>
++<p>The <u>DIR</u> is relative to the destination directory, so either specify a full
++path to the hash hierarchy, or specify a relative path that puts the links
++outside the destination (e.g. &quot;../links&quot;).</p>
++<p>Keep in mind that the hierarchy is never pruned, so if you need to reclaim
++space, you should remove any files that have just one link (since they are
++not linked into any destination dirs anymore):</p>
++<blockquote>
++<pre><code>find $DIR -links 1 -delete
++</code></pre>
++</blockquote>
++<p>The link farm's directory hierarchy is determined by the file's (32-char)
++MD5 hash and the file-length.  The hash is split up into directory shards.
++For example, if a file is 54321 bytes long, it could be stored like this:</p>
++<blockquote>
++<pre><code>$DIR/123/456/789/01234567890123456789012.54321.0
++</code></pre>
++</blockquote>
++<p>Note that the directory layout in this patch was modified for version
++3.1.0, so anyone using an older version of this patch should move their
++existing link hierarchy out of the way and then use the newer rsync to copy
++the saved hierarchy into its new layout.  Assuming that no files have
++overflowed their link limits, this would work:</p>
++<blockquote>
++<pre><code>mv $DIR $DIR.old
++rsync -aiv --link-by-hash=$DIR $DIR.old/ $DIR.tmp/
++rm -rf $DIR.tmp
++rm -rf $DIR.old
++</code></pre>
++</blockquote>
++<p>If some of your files are at their link limit, you'd be better of using a
++script to calculate the md5 sum of each file in the hierarchy and move it
++to its new location.</p>
++</dd>
++
+ <span id="opt-z"></span><dt id="opt--compress"><code>--compress</code>, <code>-z</code><a href="#opt--compress" class="tgt"></a></dt><dd>
+ <p>With this option, rsync compresses the file data as it is sent to the
+ destination machine, which reduces the amount of data being transmitted&nbsp;-&#8288;-&#8288;
+diff -Nurp a/rsyncd.conf.5 b/rsyncd.conf.5
+--- a/rsyncd.conf.5
++++ b/rsyncd.conf.5
+@@ -1,5 +1,5 @@
+ .TH "rsyncd.conf" "5" "15 Jan 2025" "rsyncd.conf from rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
++.\" prefix=/usr/local
+ .P
+ .SH "NAME"
+ .P
+@@ -73,11 +73,11 @@ and a single line something like this to
+ .RS 4
+ .P
+ .nf
+-rsync   stream  tcp     nowait  root   /usr/bin/rsync rsyncd --daemon
++rsync   stream  tcp     nowait  root   /usr/local/bin/rsync rsyncd --daemon
+ .fi
+ .RE
+ .P
+-Replace "/usr/bin/rsync" with the path to where you have rsync installed on
++Replace "/usr/local/bin/rsync" with the path to where you have rsync installed on
+ your system.  You will then need to send inetd a HUP signal to tell it to
+ reread its config file.
+ .P
+@@ -376,6 +376,22 @@ connections you will allow.  Any clients
+ been reached will receive a message telling them to try later.  The default
+ is 0, which means no limit.  A negative value disables the module.  See
+ also the "lock file" parameter.
++.IP "\fBlink\ by\ hash\ dir\fP"
++When the "link by hash dir" parameter is set to a non-empty string,
++received files will be hard linked into \fBDIR\fP, a link farm arranged by
++MD5 file hash. See the \fB\-\-link-by-hash\fP option for a full explanation.
++.IP
++The \fBDIR\fP must be accessible inside any chroot restrictions for the
++module, but can exist outside the transfer location if there is an
++inside-the-chroot path to the module (see "use chroot").  Note that a
++user-specified option does not allow this outside-the-transfer-area
++placement.
++.IP
++If this parameter is set, it will disable the \fB\-\-link-by-hash\fP command-line
++option for copies into the module.
++.P
++The default is for this parameter to be unset.
++.P
+ .IP "\fBlog\ file\fP"
+ When the "log file" parameter is set to a non-empty string, the rsync
+ daemon will log messages to the indicated file rather than using syslog.
+diff -Nurp a/rsyncd.conf.5.html b/rsyncd.conf.5.html
+--- a/rsyncd.conf.5.html
++++ b/rsyncd.conf.5.html
+@@ -77,10 +77,10 @@ command &quot;<code>rsync --daemon</code
+ </blockquote>
+ <p>and a single line something like this to /etc/inetd.conf:</p>
+ <blockquote>
+-<pre><code>rsync   stream  tcp     nowait  root   /usr/bin/rsync rsyncd --daemon
++<pre><code>rsync   stream  tcp     nowait  root   /usr/local/bin/rsync rsyncd --daemon
+ </code></pre>
+ </blockquote>
+-<p>Replace &quot;/usr/bin/rsync&quot; with the path to where you have rsync installed on
++<p>Replace &quot;/usr/local/bin/rsync&quot; with the path to where you have rsync installed on
+ your system.  You will then need to send inetd a HUP signal to tell it to
+ reread its config file.</p>
+ <p>Note that you should <strong>not</strong> send the rsync daemon a HUP signal to force it to
+@@ -375,6 +375,22 @@ is 0, which means no limit.  A negative
+ also the &quot;<a href="#lock_file">lock file</a>&quot; parameter.</p>
+ </dd>
+ 
++<dt id="link_by_hash_dir"><code>link by hash dir</code><a href="#link_by_hash_dir" class="tgt"></a></dt><dd>
++<p>When the &quot;link by hash dir&quot; parameter is set to a non-empty string,
++received files will be hard linked into <strong>DIR</strong>, a link farm arranged by
++MD5 file hash. See the <code>--link-by-hash</code> option for a full explanation.</p>
++<p>The <strong>DIR</strong> must be accessible inside any chroot restrictions for the
++module, but can exist outside the transfer location if there is an
++inside-the-chroot path to the module (see &quot;use chroot&quot;).  Note that a
++user-specified option does not allow this outside-the-transfer-area
++placement.</p>
++<p>If this parameter is set, it will disable the <code>--link-by-hash</code> command-line
++option for copies into the module.</p>
++</dd>
++</dl>
++<p>The default is for this parameter to be unset.</p>
++<dl>
++
+ <dt id="log_file"><code>log file</code><a href="#log_file" class="tgt"></a></dt><dd>
+ <p>When the &quot;log file&quot; parameter is set to a non-empty string, the rsync
+ daemon will log messages to the indicated file rather than using syslog.
+diff -Nurp a/rsync-ssl.1 b/rsync-ssl.1
+--- a/rsync-ssl.1
++++ b/rsync-ssl.1
+@@ -1,5 +1,5 @@
+ .TH "rsync-ssl" "1" "15 Jan 2025" "rsync-ssl from rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
++.\" prefix=/usr/local
+ .P
+ .SH "NAME"
+ .P

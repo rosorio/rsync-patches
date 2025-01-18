@@ -491,7 +491,7 @@ diff --git a/generator.c b/generator.c
  		if (itemizing)
  			itemize(fnamecmp, file, ndx, statret, &sx, 0, 0, NULL);
  #ifdef SUPPORT_HARD_LINKS
-@@ -2311,6 +2316,7 @@ void generate_files(int f_out, const char *local_name)
+@@ -2315,6 +2320,7 @@ void generate_files(int f_out, const char *local_name)
  				} else
  					change_local_filter_dir(fbuf, strlen(fbuf), F_DEPTH(fp));
  			}
@@ -499,7 +499,7 @@ diff --git a/generator.c b/generator.c
  		}
  		for (i = cur_flist->low; i <= cur_flist->high; i++) {
  			struct file_struct *file = cur_flist->sorted[i];
-@@ -2405,6 +2411,9 @@ void generate_files(int f_out, const char *local_name)
+@@ -2409,6 +2415,9 @@ void generate_files(int f_out, const char *local_name)
  			wait_for_receiver();
  	}
  
@@ -517,10 +517,10 @@ diff --git a/io.c b/io.c
  extern int protect_args;
  extern int checksum_seed;
 +extern int checksum_files;
+ extern int xfer_sum_len;
  extern int daemon_connection;
  extern int protocol_version;
- extern int remove_source_files;
-@@ -1117,6 +1118,9 @@ static void got_flist_entry_status(enum festatus status, int ndx)
+@@ -1118,6 +1119,9 @@ static void got_flist_entry_status(enum festatus status, int ndx)
  				if (inc_recurse)
  					flist->in_progress++;
  			}
@@ -575,7 +575,7 @@ diff --git a/receiver.c b/receiver.c
  extern int whole_file;
  extern int inplace;
  extern int inplace_partial;
-@@ -440,7 +441,8 @@ static void handle_delayed_updates(char *local_name)
+@@ -441,7 +442,8 @@ static void handle_delayed_updates(char *local_name)
  					"rename failed for %s (from %s)",
  					full_fname(fname), partialptr);
  			} else {
@@ -585,7 +585,7 @@ diff --git a/receiver.c b/receiver.c
  					send_msg_success(fname, ndx);
  				handle_partial_dir(partialptr, PDIR_DELETE);
  			}
-@@ -926,7 +928,8 @@ int recv_files(int f_in, int f_out, char *local_name)
+@@ -941,7 +943,8 @@ int recv_files(int f_in, int f_out, char *local_name)
  		case 2:
  			break;
  		case 1:
@@ -618,7 +618,7 @@ diff --git a/rsync.1.md b/rsync.1.md
 diff --git a/rsync.h b/rsync.h
 --- a/rsync.h
 +++ b/rsync.h
-@@ -1117,6 +1117,8 @@ typedef struct {
+@@ -1120,6 +1120,8 @@ typedef struct {
  
  #define CSF_ENABLE (1<<1)
  #define CSF_LAX (1<<2)
@@ -650,3 +650,88 @@ diff --git a/rsyncd.conf.5.md b/rsyncd.conf.5.md
  
  0.  `read only`
  
+diff -Nurp a/rsync.1 b/rsync.1
+--- a/rsync.1
++++ b/rsync.1
+@@ -925,9 +925,13 @@ would be if \fB\-\-sumfiles\fP was not s
+ .IP
+ The MODE value is either "lax", for relaxed checking (which compares size
+ and mtime), "strict" (which also compares ctime and inode), or "none" to
+-ignore any .rsyncsums files ("none" is the default).  Rsync does not create
+-or update these files, but there is a perl script in the support directory
+-named "rsyncsums" that can be used for that.
++ignore any .rsyncsums files ("none" is the default).
++If you want rsync to create and/or update these files, specify a prefixed
++plus ("+lax" or "+strict").  Adding a second prefixed '+' causes the
++checksum-file updates to happen even when the transfer is in \fB\-\-dry-run\fP
++mode ("++lax" or "++strict").  There is also a perl script in the support
++directory named "rsyncsums" that can be used to update the .rsyncsums
++files.
+ .IP
+ This option has no effect unless \fB\-\-checksum\fP (\fB\-c\fP) was also
+ specified.  It also only affects the current side of the transfer, so if
+diff -Nurp a/rsync.1.html b/rsync.1.html
+--- a/rsync.1.html
++++ b/rsync.1.html
+@@ -813,9 +813,13 @@ checksum data is missing or outdated, th
+ would be if <code>--sumfiles</code> was not specified.</p>
+ <p>The MODE value is either &quot;lax&quot;, for relaxed checking (which compares size
+ and mtime), &quot;strict&quot; (which also compares ctime and inode), or &quot;none&quot; to
+-ignore any .rsyncsums files (&quot;none&quot; is the default).  Rsync does not create
+-or update these files, but there is a perl script in the support directory
+-named &quot;rsyncsums&quot; that can be used for that.</p>
++ignore any .rsyncsums files (&quot;none&quot; is the default).
++If you want rsync to create and/or update these files, specify a prefixed
++plus (&quot;+lax&quot; or &quot;+strict&quot;).  Adding a second prefixed '+' causes the
++checksum-file updates to happen even when the transfer is in <a href="#opt--dry-run"><code>--dry-run</code></a>
++mode (&quot;++lax&quot; or &quot;++strict&quot;).  There is also a perl script in the support
++directory named &quot;rsyncsums&quot; that can be used to update the .rsyncsums
++files.</p>
+ <p>This option has no effect unless <a href="#opt--checksum"><code>--checksum</code></a> (<code>-c</code>) was also
+ specified.  It also only affects the current side of the transfer, so if
+ you want the remote side to parse its own .rsyncsums files, specify the
+diff -Nurp a/rsyncd.conf.5 b/rsyncd.conf.5
+--- a/rsyncd.conf.5
++++ b/rsyncd.conf.5
+@@ -439,13 +439,15 @@ file.  The default is \fB/var/run/rsyncd
+ This parameter tells rsync to make use of any cached checksum information
+ it finds in per-directory .rsyncsums files when the current transfer is
+ using the \fB\-\-checksum\fP option.  The value can be set to either "lax",
+-"strict", or "none".  See the client's \fB\-\-sumfiles\fP option for what these
+-choices do.
++"strict", "+lax", "+strict", "++lax", "++strict", or +"none".  See the
++client's \fB\-\-sumfiles\fP option for what these choices do.
+ .IP
+ Note also that the client's command-line option, \fB\-\-sumfiles\fP, has no
+ effect on a daemon.  A daemon will only access checksum files if this
+-config option tells it to.  See also the \fBexclude\fP directive for a way to
+-hide the .rsyncsums files from the user.
++config option tells it to.  You can configure updating of the .rsyncsums
++files even if the module itself is configured to be read-only.  See also
++the \fBexclude\fP directive for a way to hide the .rsyncsums files from the
++user.
+ .IP "\fBread\ only\fP"
+ This parameter determines whether clients will be able to upload files or
+ not. If "read only" is true then any attempted uploads will fail. If
+diff -Nurp a/rsyncd.conf.5.html b/rsyncd.conf.5.html
+--- a/rsyncd.conf.5.html
++++ b/rsyncd.conf.5.html
+@@ -442,12 +442,14 @@ file.  The default is <code>/var/run/rsy
+ <p>This parameter tells rsync to make use of any cached checksum information
+ it finds in per-directory .rsyncsums files when the current transfer is
+ using the <code>--checksum</code> option.  The value can be set to either &quot;lax&quot;,
+-&quot;strict&quot;, or &quot;none&quot;.  See the client's <code>--sumfiles</code> option for what these
+-choices do.</p>
++&quot;strict&quot;, &quot;+lax&quot;, &quot;+strict&quot;, &quot;++lax&quot;, &quot;++strict&quot;, or +&quot;none&quot;.  See the
++client's <code>--sumfiles</code> option for what these choices do.</p>
+ <p>Note also that the client's command-line option, <code>--sumfiles</code>, has no
+ effect on a daemon.  A daemon will only access checksum files if this
+-config option tells it to.  See also the <code>exclude</code> directive for a way to
+-hide the .rsyncsums files from the user.</p>
++config option tells it to.  You can configure updating of the .rsyncsums
++files even if the module itself is configured to be read-only.  See also
++the <code>exclude</code> directive for a way to hide the .rsyncsums files from the
++user.</p>
+ </dd>
+ 
+ <dt id="read_only"><code>read only</code><a href="#read_only" class="tgt"></a></dt><dd>

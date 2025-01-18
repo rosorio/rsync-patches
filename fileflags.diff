@@ -7,7 +7,7 @@ To use this patch, run these commands for a successful build:
     ./configure                         (optional if already run)
     make
 
-based-on: 6c8ca91c731b7bf2b081694bda85b7dadc2b7aff
+based-on: 3305a7a063ab0167cab5bf7029da53abaa9fdb6e
 diff --git a/compat.c b/compat.c
 --- a/compat.c
 +++ b/compat.c
@@ -280,7 +280,7 @@ diff --git a/generator.c b/generator.c
  
  #ifdef SUPPORT_HARD_LINKS
  	if (preserve_hard_links && F_HLINK_NOT_FIRST(file)
-@@ -2107,17 +2131,25 @@ static void touch_up_dirs(struct file_list *flist, int ndx)
+@@ -2111,17 +2135,25 @@ static void touch_up_dirs(struct file_list *flist, int ndx)
  			continue;
  		fname = f_name(file, NULL);
  		if (fix_dir_perms)
@@ -574,7 +574,7 @@ diff --git a/rsync.c b/rsync.c
  extern int preserve_executability;
  extern int preserve_mtimes;
  extern int omit_dir_times;
-@@ -468,6 +469,39 @@ mode_t dest_mode(mode_t flist_mode, mode_t stat_mode, int dflt_perms,
+@@ -471,6 +472,39 @@ mode_t dest_mode(mode_t flist_mode, mode_t stat_mode, int dflt_perms,
  	return new_mode;
  }
  
@@ -614,7 +614,7 @@ diff --git a/rsync.c b/rsync.c
  static int same_mtime(struct file_struct *file, STRUCT_STAT *st, int extra_accuracy)
  {
  #ifdef ST_MTIME_NSEC
-@@ -544,7 +578,7 @@ int set_file_attrs(const char *fname, struct file_struct *file, stat_x *sxp,
+@@ -547,7 +581,7 @@ int set_file_attrs(const char *fname, struct file_struct *file, stat_x *sxp,
  		if (am_root >= 0) {
  			uid_t uid = change_uid ? (uid_t)F_OWNER(file) : sxp->st.st_uid;
  			gid_t gid = change_gid ? (gid_t)F_GROUP(file) : sxp->st.st_gid;
@@ -623,7 +623,7 @@ diff --git a/rsync.c b/rsync.c
  				/* We shouldn't have attempted to change uid
  				 * or gid unless have the privilege. */
  				rsyserr(FERROR_XFER, errno, "%s %s failed",
-@@ -654,7 +688,7 @@ int set_file_attrs(const char *fname, struct file_struct *file, stat_x *sxp,
+@@ -657,7 +691,7 @@ int set_file_attrs(const char *fname, struct file_struct *file, stat_x *sxp,
  
  #ifdef HAVE_CHMOD
  	if (!BITS_EQUAL(sxp->st.st_mode, new_mode, CHMOD_BITS)) {
@@ -632,7 +632,7 @@ diff --git a/rsync.c b/rsync.c
  		if (ret < 0) {
  			rsyserr(FERROR_XFER, errno,
  				"failed to set permissions on %s",
-@@ -666,6 +700,19 @@ int set_file_attrs(const char *fname, struct file_struct *file, stat_x *sxp,
+@@ -669,6 +703,19 @@ int set_file_attrs(const char *fname, struct file_struct *file, stat_x *sxp,
  	}
  #endif
  
@@ -652,7 +652,7 @@ diff --git a/rsync.c b/rsync.c
  	if (INFO_GTE(NAME, 2) && flags & ATTRS_REPORT) {
  		if (updated)
  			rprintf(FCLIENT, "%s\n", fname);
-@@ -743,7 +790,8 @@ int finish_transfer(const char *fname, const char *fnametmp,
+@@ -746,7 +793,8 @@ int finish_transfer(const char *fname, const char *fnametmp,
  
  	/* Change permissions before putting the file into place. */
  	set_file_attrs(fnametmp, file, NULL, fnamecmp,
@@ -662,7 +662,7 @@ diff --git a/rsync.c b/rsync.c
  
  	/* move tmp file over real file */
  	if (DEBUG_GTE(RECV, 1))
-@@ -760,6 +808,10 @@ int finish_transfer(const char *fname, const char *fnametmp,
+@@ -763,6 +811,10 @@ int finish_transfer(const char *fname, const char *fnametmp,
  	}
  	if (ret == 0) {
  		/* The file was moved into place (not copied), so it's done. */
@@ -685,7 +685,7 @@ diff --git a/rsync.h b/rsync.h
  #define XMIT_CRTIME_EQ_MTIME (1<<17)	/* any protocol - restricted by command-line option */
  
  /* These flags are used in the live flist data. */
-@@ -192,6 +192,7 @@
+@@ -193,6 +193,7 @@
  #define ATTRS_SKIP_MTIME	(1<<1)
  #define ATTRS_ACCURATE_TIME	(1<<2)
  #define ATTRS_SKIP_ATIME	(1<<3)
@@ -693,7 +693,7 @@ diff --git a/rsync.h b/rsync.h
  #define ATTRS_SKIP_CRTIME	(1<<5)
  
  #define MSG_FLUSH	2
-@@ -220,6 +221,7 @@
+@@ -221,6 +222,7 @@
  #define ITEM_REPORT_GROUP (1<<6)
  #define ITEM_REPORT_ACL (1<<7)
  #define ITEM_REPORT_XATTR (1<<8)
@@ -701,7 +701,7 @@ diff --git a/rsync.h b/rsync.h
  #define ITEM_REPORT_CRTIME (1<<10)
  #define ITEM_BASIS_TYPE_FOLLOWS (1<<11)
  #define ITEM_XNAME_FOLLOWS (1<<12)
-@@ -587,6 +589,31 @@ typedef unsigned int size_t;
+@@ -588,6 +590,31 @@ typedef unsigned int size_t;
  #define SUPPORT_CRTIMES 1
  #endif
  
@@ -733,7 +733,7 @@ diff --git a/rsync.h b/rsync.h
  /* Find a variable that is either exactly 32-bits or longer.
   * If some code depends on 32-bit truncation, it will need to
   * take special action in a "#if SIZEOF_INT32 > 4" section. */
-@@ -818,6 +845,7 @@ extern int pathname_ndx;
+@@ -819,6 +846,7 @@ extern int pathname_ndx;
  extern int depth_ndx;
  extern int uid_ndx;
  extern int gid_ndx;
@@ -741,7 +741,7 @@ diff --git a/rsync.h b/rsync.h
  extern int acls_ndx;
  extern int xattrs_ndx;
  extern int file_sum_extra_cnt;
-@@ -873,6 +901,11 @@ extern int file_sum_extra_cnt;
+@@ -874,6 +902,11 @@ extern int file_sum_extra_cnt;
  /* When the associated option is on, all entries will have these present: */
  #define F_OWNER(f) REQ_EXTRA(f, uid_ndx)->unum
  #define F_GROUP(f) REQ_EXTRA(f, gid_ndx)->unum
@@ -756,7 +756,7 @@ diff --git a/rsync.h b/rsync.h
 diff --git a/syscall.c b/syscall.c
 --- a/syscall.c
 +++ b/syscall.c
-@@ -38,6 +38,7 @@ extern int am_root;
+@@ -40,6 +40,7 @@ extern int am_root;
  extern int am_sender;
  extern int read_only;
  extern int list_only;
@@ -764,7 +764,7 @@ diff --git a/syscall.c b/syscall.c
  extern int inplace;
  extern int preallocate_files;
  extern int preserve_perms;
-@@ -81,7 +82,23 @@ int do_unlink(const char *path)
+@@ -85,7 +86,23 @@ int do_unlink(const char *path)
  {
  	if (dry_run) return 0;
  	RETURN_ERROR_IF_RO_OR_LO;
@@ -789,7 +789,7 @@ diff --git a/syscall.c b/syscall.c
  }
  
  #ifdef SUPPORT_LINKS
-@@ -146,14 +163,35 @@ int do_link(const char *old_path, const char *new_path)
+@@ -150,14 +167,35 @@ int do_link(const char *old_path, const char *new_path)
  }
  #endif
  
@@ -827,7 +827,7 @@ diff --git a/syscall.c b/syscall.c
  }
  
  int do_mknod(const char *pathname, mode_t mode, dev_t dev)
-@@ -193,7 +231,7 @@ int do_mknod(const char *pathname, mode_t mode, dev_t dev)
+@@ -197,7 +235,7 @@ int do_mknod(const char *pathname, mode_t mode, dev_t dev)
  			return -1;
  		close(sock);
  #ifdef HAVE_CHMOD
@@ -836,7 +836,7 @@ diff --git a/syscall.c b/syscall.c
  #else
  		return 0;
  #endif
-@@ -210,7 +248,22 @@ int do_rmdir(const char *pathname)
+@@ -214,7 +252,22 @@ int do_rmdir(const char *pathname)
  {
  	if (dry_run) return 0;
  	RETURN_ERROR_IF_RO_OR_LO;
@@ -860,7 +860,7 @@ diff --git a/syscall.c b/syscall.c
  }
  
  int do_open(const char *pathname, int flags, mode_t mode)
-@@ -229,7 +282,7 @@ int do_open(const char *pathname, int flags, mode_t mode)
+@@ -233,7 +286,7 @@ int do_open(const char *pathname, int flags, mode_t mode)
  }
  
  #ifdef HAVE_CHMOD
@@ -869,7 +869,7 @@ diff --git a/syscall.c b/syscall.c
  {
  	static int switch_step = 0;
  	int code;
-@@ -268,17 +321,72 @@ int do_chmod(const char *path, mode_t mode)
+@@ -272,17 +325,72 @@ int do_chmod(const char *path, mode_t mode)
  			code = chmod(path, mode & CHMOD_BITS); /* DISCOURAGED FUNCTION */
  		break;
  	}
@@ -946,16 +946,17 @@ diff --git a/syscall.c b/syscall.c
 diff --git a/t_stub.c b/t_stub.c
 --- a/t_stub.c
 +++ b/t_stub.c
-@@ -29,6 +29,8 @@ int protect_args = 0;
+@@ -28,6 +28,9 @@ int preallocate_files = 0;
+ int protect_args = 0;
  int module_id = -1;
  int relative_paths = 0;
- int module_dirlen = 0;
++int module_dirlen = 0;
 +int force_change = 0;
 +int preserve_acls = 0;
+ unsigned int module_dirlen = 0;
  int preserve_xattrs = 0;
  int preserve_perms = 0;
- int preserve_executability = 0;
-@@ -111,3 +113,23 @@ filter_rule_list daemon_filter_list;
+@@ -111,3 +114,23 @@ filter_rule_list daemon_filter_list;
  {
  	return cst ? 0 : 0;
  }
@@ -1118,3 +1119,636 @@ diff --git a/xattrs.c b/xattrs.c
  	if (!IS_DEVICE(fst.st_mode))
  		fst.st_rdev = 0; /* just in case */
  
+diff -Nurp a/rrsync.1 b/rrsync.1
+--- a/rrsync.1
++++ b/rrsync.1
+@@ -1,176 +0,0 @@
+-.TH "rrsync" "1" "15 Jan 2025" "rrsync from rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
+-.P
+-.SH "NAME"
+-.P
+-rrsync \- a script to setup restricted rsync users via ssh logins
+-.P
+-.SH "SYNOPSIS"
+-.P
+-.nf
+-rrsync [-ro|-wo] [-munge] [-no-del] [-no-lock] [-no-overwrite]  DIR
+-.fi
+-.P
+-The single non-option argument specifies the restricted \fIDIR\fP to use. It can be
+-relative to the user's home directory or an absolute path.
+-.P
+-The online version of this manpage (that includes cross-linking of topics)
+-is available at
+-.UR https://download.samba.org/pub/rsync/rrsync.1
+-.UE .
+-.P
+-.SH "DESCRIPTION"
+-.P
+-A user's ssh login can be restricted to only allow the running of an rsync
+-transfer in one of two easy ways:
+-.P
+-.IP o
+-forcing the running of the rrsync script
+-.IP o
+-forcing the running of an rsync daemon-over-ssh command.
+-.P
+-Both of these setups use a feature of ssh that allows a command to be forced to
+-run instead of an interactive shell.  However, if the user's home shell is bash,
+-please see BASH SECURITY ISSUE for a potential issue.
+-.P
+-To use the rrsync script, edit the user's \fB~/.ssh/authorized_keys\fP file and add
+-a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:
+-.RS 4
+-.P
+-.nf
+-command="rrsync DIR"
+-command="rrsync -ro DIR"
+-command="rrsync -munge -no-del DIR"
+-.fi
+-.RE
+-.P
+-Then, ensure that the rrsync script has your desired option restrictions. You
+-may want to copy the script to a local bin dir with a unique name if you want
+-to have multiple configurations. One or more rrsync options can be specified
+-prior to the \fIDIR\fP if you want to further restrict the transfer.
+-.P
+-To use an rsync daemon setup, edit the user's \fB~/.ssh/authorized_keys\fP file and
+-add a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:
+-.RS 4
+-.P
+-.nf
+-command="rsync --server --daemon ."
+-command="rsync --server --daemon --config=/PATH/TO/rsyncd.conf ."
+-.fi
+-.RE
+-.P
+-Then, ensure that the rsyncd.conf file is created with one or more module names
+-with the appropriate path and option restrictions.  If rsync's
+-\fB\-\-config\fP option is omitted, it defaults to \fB~/rsyncd.conf\fP.
+-See the \fBrsyncd.conf\fP(5) manpage for details of how to
+-configure an rsync daemon.
+-.P
+-When using rrsync, there can be just one restricted dir per authorized key.  A
+-daemon setup, on the other hand, allows multiple module names inside the config
+-file, each one with its own path setting.
+-.P
+-The remainder of this manpage is dedicated to using the rrsync script.
+-.P
+-.SH "OPTIONS"
+-.P
+-.IP "\fB\-ro\fP"
+-Allow only reading from the DIR. Implies \fB\-no-del\fP and
+-\fB\-no-lock\fP.
+-.IP "\fB\-wo\fP"
+-Allow only writing to the DIR.
+-.IP "\fB\-munge\fP"
+-Enable rsync's \fB\-\-munge-links\fP on the server side.
+-.IP "\fB\-no-del\fP"
+-Disable rsync's \fB\-\-delete*\fP and \fB\-\-remove*\fP options.
+-.IP "\fB\-no-lock\fP"
+-Avoid the single-run (per-user) lock check.  Useful with \fB\-munge\fP.
+-.IP "\fB\-no-overwrite\fP"
+-Enforce \fB\-\-ignore-existing\fP on the server. Prevents overwriting existing
+-files when the server is the receiver.
+-.IP "\fB\-help\fP, \fB\-h\fP"
+-Output this help message and exit.
+-.P
+-.SH "SECURITY RESTRICTIONS"
+-.P
+-The rrsync script validates the path arguments it is sent to try to restrict
+-them to staying within the specified DIR.
+-.P
+-The rrsync script rejects rsync's \fB\-\-copy-links\fP option (by
+-default) so that a copy cannot dereference a symlink within the DIR to get to a
+-file outside the DIR.
+-.P
+-The rrsync script rejects rsync's \fB\-\-protect-args\fP (\fB\-s\fP) option
+-because it would allow options to be sent to the server-side that the script
+-cannot check.  If you want to support \fB\-\-protect-args\fP, use a daemon-over-ssh
+-setup.
+-.P
+-The rrsync script accepts just a subset of rsync's options that the real rsync
+-uses when running the server command.  A few extra convenience options are also
+-included to help it to interact with BackupPC and accept some convenient user
+-overrides.
+-.P
+-The script (or a copy of it) can be manually edited if you want it to customize
+-the option handling.
+-.P
+-.SH "BASH SECURITY ISSUE"
+-.P
+-If your users have bash set as their home shell, bash may try to be overly
+-helpful and ensure that the user's login bashrc files are run prior to
+-executing the forced command.  This can be a problem if the user can somehow
+-update their home bashrc files, perhaps via the restricted copy, a shared home
+-directory, or something similar.
+-.P
+-One simple way to avoid the issue is to switch the user to a simpler shell,
+-such as dash.  When choosing the new home shell, make sure that you're not
+-choosing bash in disguise, as it is unclear if it avoids the security issue.
+-.P
+-Another potential fix is to ensure that the user's home directory is not a
+-shared mount and that they have no means of copying files outside of their
+-restricted directories.  This may require you to force the enabling of symlink
+-munging on the server side.
+-.P
+-A future version of openssh may have a change to the handling of forced
+-commands that allows it to avoid using the user's home shell.
+-.P
+-.SH "EXAMPLES"
+-.P
+-The \fB~/.ssh/authorized_keys\fP file might have lines in it like this:
+-.RS 4
+-.P
+-.nf
+-command="rrsync client/logs" ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAzG...
+-command="rrsync -ro results" ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAmk...
+-.fi
+-.RE
+-.P
+-.SH "FILES"
+-.P
+-~/.ssh/authorized_keys
+-.P
+-.SH "SEE ALSO"
+-.P
+-\fBrsync\fP(1), \fBrsyncd.conf\fP(5)
+-.P
+-.SH "VERSION"
+-.P
+-This manpage is current for version 3.4.1 of rsync.
+-.P
+-.SH "CREDITS"
+-.P
+-rsync is distributed under the GNU General Public License.  See the file
+-COPYING for details.
+-.P
+-An rsync web site is available at
+-.UR https://rsync.samba.org/
+-.UE
+-and its github
+-project is
+-.UR https://github.com/RsyncProject/rsync
+-.UE .
+-.P
+-.SH "AUTHOR"
+-.P
+-The original rrsync perl script was written by Joe Smith.  Many people have
+-later contributed to it.  The python version was created by Wayne Davison.
+diff -Nurp a/rrsync.1.html b/rrsync.1.html
+--- a/rrsync.1.html
++++ b/rrsync.1.html
+@@ -1,169 +0,0 @@
+-<html><head>
+-<title>rrsync(1) manpage</title>
+-<meta charset="UTF-8"/>
+-<link href="https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&display=swap" rel="stylesheet">
+-<style>
+-body {
+-  max-width: 50em;
+-  margin: auto;
+-}
+-body, b, strong, u {
+-  font-family: 'Roboto', sans-serif;
+-}
+-a.tgt { font-face: symbol; font-weight: 400; font-size: 70%; visibility: hidden; text-decoration: none; color: #ddd; padding: 0 4px; border: 0; }
+-a.tgt:after { content: '🔗'; }
+-a.tgt:hover { color: #444; background-color: #eaeaea; }
+-h1:hover > a.tgt, h2:hover > a.tgt, h3:hover > a.tgt, dt:hover > a.tgt { visibility: visible; }
+-code {
+-  font-family: 'Roboto Mono', monospace;
+-  font-weight: bold;
+-  white-space: pre;
+-}
+-pre code {
+-  display: block;
+-  font-weight: normal;
+-}
+-blockquote pre code {
+-  background: #f1f1f1;
+-}
+-dd p:first-of-type {
+-  margin-block-start: 0em;
+-}
+-</style>
+-</head><body>
+-<h2 id="NAME">NAME<a href="#NAME" class="tgt"></a></h2>
+-<p>rrsync -&#8288; a script to setup restricted rsync users via ssh logins</p>
+-<h2 id="SYNOPSIS">SYNOPSIS<a href="#SYNOPSIS" class="tgt"></a></h2>
+-<pre><code>rrsync [-ro|-wo] [-munge] [-no-del] [-no-lock] [-no-overwrite]  DIR
+-</code></pre>
+-<p>The single non-option argument specifies the restricted <u>DIR</u> to use. It can be
+-relative to the user's home directory or an absolute path.</p>
+-<p>The online version of this manpage (that includes cross-linking of topics)
+-is available at <a href="https://download.samba.org/pub/rsync/rrsync.1">https://download.samba.org/pub/rsync/rrsync.1</a>.</p>
+-<h2 id="DESCRIPTION">DESCRIPTION<a href="#DESCRIPTION" class="tgt"></a></h2>
+-<p>A user's ssh login can be restricted to only allow the running of an rsync
+-transfer in one of two easy ways:</p>
+-<ul>
+-<li>forcing the running of the rrsync script</li>
+-<li>forcing the running of an rsync daemon-over-ssh command.</li>
+-</ul>
+-<p>Both of these setups use a feature of ssh that allows a command to be forced to
+-run instead of an interactive shell.  However, if the user's home shell is bash,
+-please see <a href="#BASH_SECURITY_ISSUE">BASH SECURITY ISSUE</a> for a potential issue.</p>
+-<p>To use the rrsync script, edit the user's <code>~/.ssh/authorized_keys</code> file and add
+-a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:</p>
+-<blockquote>
+-<pre><code>command=&quot;rrsync DIR&quot;
+-command=&quot;rrsync -ro DIR&quot;
+-command=&quot;rrsync -munge -no-del DIR&quot;
+-</code></pre>
+-</blockquote>
+-<p>Then, ensure that the rrsync script has your desired option restrictions. You
+-may want to copy the script to a local bin dir with a unique name if you want
+-to have multiple configurations. One or more rrsync options can be specified
+-prior to the <u>DIR</u> if you want to further restrict the transfer.</p>
+-<p>To use an rsync daemon setup, edit the user's <code>~/.ssh/authorized_keys</code> file and
+-add a prefix like one of the following (followed by a space) in front of each
+-ssh-key line that should be restricted:</p>
+-<blockquote>
+-<pre><code>command=&quot;rsync --server --daemon .&quot;
+-command=&quot;rsync --server --daemon --config=/PATH/TO/rsyncd.conf .&quot;
+-</code></pre>
+-</blockquote>
+-<p>Then, ensure that the rsyncd.conf file is created with one or more module names
+-with the appropriate path and option restrictions.  If rsync's
+-<a href="rsync.1#dopt--config"><code>--config</code></a> option is omitted, it defaults to <code>~/rsyncd.conf</code>.
+-See the <a href="rsyncd.conf.5"><strong>rsyncd.conf</strong>(5)</a> manpage for details of how to
+-configure an rsync daemon.</p>
+-<p>When using rrsync, there can be just one restricted dir per authorized key.  A
+-daemon setup, on the other hand, allows multiple module names inside the config
+-file, each one with its own path setting.</p>
+-<p>The remainder of this manpage is dedicated to using the rrsync script.</p>
+-<h2 id="OPTIONS">OPTIONS<a href="#OPTIONS" class="tgt"></a></h2>
+-<dl>
+-
+-<dt id="opt-ro"><code>-ro</code><a href="#opt-ro" class="tgt"></a></dt><dd>
+-<p>Allow only reading from the DIR. Implies <a href="#opt-no-del"><code>-no-del</code></a> and
+-<a href="#opt-no-lock"><code>-no-lock</code></a>.</p>
+-</dd>
+-
+-<dt id="opt-wo"><code>-wo</code><a href="#opt-wo" class="tgt"></a></dt><dd>
+-<p>Allow only writing to the DIR.</p>
+-</dd>
+-
+-<dt id="opt-munge"><code>-munge</code><a href="#opt-munge" class="tgt"></a></dt><dd>
+-<p>Enable rsync's <a href="rsync.1#opt--munge-links"><code>--munge-links</code></a> on the server side.</p>
+-</dd>
+-
+-<dt id="opt-no-del"><code>-no-del</code><a href="#opt-no-del" class="tgt"></a></dt><dd>
+-<p>Disable rsync's <code>--delete*</code> and <code>--remove*</code> options.</p>
+-</dd>
+-
+-<dt id="opt-no-lock"><code>-no-lock</code><a href="#opt-no-lock" class="tgt"></a></dt><dd>
+-<p>Avoid the single-run (per-user) lock check.  Useful with <a href="#opt-munge"><code>-munge</code></a>.</p>
+-</dd>
+-
+-<dt id="opt-no-overwrite"><code>-no-overwrite</code><a href="#opt-no-overwrite" class="tgt"></a></dt><dd>
+-<p>Enforce <code>--ignore-existing</code> on the server. Prevents overwriting existing
+-files when the server is the receiver.</p>
+-</dd>
+-
+-<span id="opt-h"></span><dt id="opt-help"><code>-help</code>, <code>-h</code><a href="#opt-help" class="tgt"></a></dt><dd>
+-<p>Output this help message and exit.</p>
+-</dd>
+-</dl>
+-<h2 id="SECURITY_RESTRICTIONS">SECURITY RESTRICTIONS<a href="#SECURITY_RESTRICTIONS" class="tgt"></a></h2>
+-<p>The rrsync script validates the path arguments it is sent to try to restrict
+-them to staying within the specified DIR.</p>
+-<p>The rrsync script rejects rsync's <a href="rsync.1#opt--copy-links"><code>--copy-links</code></a> option (by
+-default) so that a copy cannot dereference a symlink within the DIR to get to a
+-file outside the DIR.</p>
+-<p>The rrsync script rejects rsync's <a href="rsync.1#opt--protect-args"><code>--protect-args</code></a> (<code>-s</code>) option
+-because it would allow options to be sent to the server-side that the script
+-cannot check.  If you want to support <code>--protect-args</code>, use a daemon-over-ssh
+-setup.</p>
+-<p>The rrsync script accepts just a subset of rsync's options that the real rsync
+-uses when running the server command.  A few extra convenience options are also
+-included to help it to interact with BackupPC and accept some convenient user
+-overrides.</p>
+-<p>The script (or a copy of it) can be manually edited if you want it to customize
+-the option handling.</p>
+-<h2 id="BASH_SECURITY_ISSUE">BASH SECURITY ISSUE<a href="#BASH_SECURITY_ISSUE" class="tgt"></a></h2>
+-<p>If your users have bash set as their home shell, bash may try to be overly
+-helpful and ensure that the user's login bashrc files are run prior to
+-executing the forced command.  This can be a problem if the user can somehow
+-update their home bashrc files, perhaps via the restricted copy, a shared home
+-directory, or something similar.</p>
+-<p>One simple way to avoid the issue is to switch the user to a simpler shell,
+-such as dash.  When choosing the new home shell, make sure that you're not
+-choosing bash in disguise, as it is unclear if it avoids the security issue.</p>
+-<p>Another potential fix is to ensure that the user's home directory is not a
+-shared mount and that they have no means of copying files outside of their
+-restricted directories.  This may require you to force the enabling of symlink
+-munging on the server side.</p>
+-<p>A future version of openssh may have a change to the handling of forced
+-commands that allows it to avoid using the user's home shell.</p>
+-<h2 id="EXAMPLES">EXAMPLES<a href="#EXAMPLES" class="tgt"></a></h2>
+-<p>The <code>~/.ssh/authorized_keys</code> file might have lines in it like this:</p>
+-<blockquote>
+-<pre><code>command=&quot;rrsync client/logs&quot; ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAzG...
+-command=&quot;rrsync -ro results&quot; ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAmk...
+-</code></pre>
+-</blockquote>
+-<h2 id="FILES">FILES<a href="#FILES" class="tgt"></a></h2>
+-<p>~/.ssh/authorized_keys</p>
+-<h2 id="SEE_ALSO">SEE ALSO<a href="#SEE_ALSO" class="tgt"></a></h2>
+-<p><a href="rsync.1"><strong>rsync</strong>(1)</a>, <a href="rsyncd.conf.5"><strong>rsyncd.conf</strong>(5)</a></p>
+-<h2 id="VERSION">VERSION<a href="#VERSION" class="tgt"></a></h2>
+-<p>This manpage is current for version 3.4.1 of rsync.</p>
+-<h2 id="CREDITS">CREDITS<a href="#CREDITS" class="tgt"></a></h2>
+-<p>rsync is distributed under the GNU General Public License.  See the file
+-<a href="COPYING">COPYING</a> for details.</p>
+-<p>An rsync web site is available at <a href="https://rsync.samba.org/">https://rsync.samba.org/</a> and its github
+-project is <a href="https://github.com/RsyncProject/rsync">https://github.com/RsyncProject/rsync</a>.</p>
+-<h2 id="AUTHOR">AUTHOR<a href="#AUTHOR" class="tgt"></a></h2>
+-<p>The original rrsync perl script was written by Joe Smith.  Many people have
+-later contributed to it.  The python version was created by Wayne Davison.</p>
+-<div style="float: right"><p><i>15 Jan 2025</i></p></div>
+-</body></html>
+diff -Nurp a/rsync.1 b/rsync.1
+--- a/rsync.1
++++ b/rsync.1
+@@ -1,5 +1,5 @@
+ .TH "rsync" "1" "15 Jan 2025" "rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
++.\" prefix=/usr/local
+ .P
+ .SH "NAME"
+ .P
+@@ -545,6 +545,7 @@ has its own detailed description later i
+ --keep-dirlinks, -K      treat symlinked dir on receiver as dir
+ --hard-links, -H         preserve hard links
+ --perms, -p              preserve permissions
++--fileflags              preserve file-flags (aka chflags)
+ --executability, -E      preserve executability
+ --chmod=CHMOD            affect file and/or directory permissions
+ --acls, -A               preserve ACLs (implies --perms)
+@@ -586,7 +587,10 @@ has its own detailed description later i
+ --ignore-missing-args    ignore missing source args without error
+ --delete-missing-args    delete missing source args from destination
+ --ignore-errors          delete even if there are I/O errors
+---force                  force deletion of dirs even if not empty
++--force-delete           force deletion of directories even if not empty
++--force-change           affect user-/system-immutable files/dirs
++--force-uchange          affect user-immutable files/dirs
++--force-schange          affect system-immutable files/dirs
+ --max-delete=NUM         don't delete more than NUM files
+ --max-size=SIZE          don't transfer any file larger than SIZE
+ --min-size=SIZE          don't transfer any file smaller than SIZE
+@@ -917,6 +921,7 @@ This is equivalent to \fB\-rlptgoD\fP.
+ recursion and want to preserve almost everything.  Be aware that it does
+ \fBnot\fP include preserving ACLs (\fB\-A\fP), xattrs (\fB\-X\fP), atimes (\fB\-U\fP),
+ crtimes (\fB\-N\fP), nor the finding and preserving of hardlinks (\fB\-H\fP).
++It also does \fBnot\fP imply \fB\-\-fileflags\fP.
+ .IP
+ The only exception to the above equivalence is when \fB\-\-files-from\fP
+ is specified, in which case \fB\-r\fP is not implied.
+@@ -1381,7 +1386,7 @@ to non-directories to be affected, as th
+ Without this option, if the sending side has replaced a directory with a
+ symlink to a directory, the receiving side will delete anything that is in
+ the way of the new symlink, including a directory hierarchy (as long as
+-\fB\-\-force\fP or \fB\-\-delete\fP is in effect).
++\fB\-\-force-delete\fP or \fB\-\-delete\fP is in effect).
+ .IP
+ See also \fB\-\-keep-dirlinks\fP for an analogous option for the
+ receiving side.
+@@ -1599,6 +1604,29 @@ receiver-only rule that excludes all nam
+ Note that the \fB\-X\fP option does not copy rsync's special xattr values (e.g.
+ those used by \fB\-\-fake-super\fP) unless you repeat the option (e.g. \fB\-XX\fP).
+ This "copy all xattrs" mode cannot be used with \fB\-\-fake-super\fP.
++.IP "\fB\-\-fileflags\fP"
++This option causes rsync to update the file-flags to be the same as the
++source files and directories (if your OS supports the \fBchflags\fP(2) system
++call).   Some flags can only be altered by the super-user and some might
++only be unset below a certain secure-level (usually single-user mode). It
++will not make files alterable that are set to immutable on the receiver.
++To do that, see \fB\-\-force-change\fP, \fB\-\-force-uchange\fP, and
++\fB\-\-force-schange\fP.
++.IP "\fB\-\-force-change\fP"
++This option causes rsync to disable both user-immutable and
++system-immutable flags on files and directories that are being updated or
++deleted on the receiving side.  This option overrides
++\fB\-\-force-uchange\fP and \fB\-\-force-schange\fP.
++.IP "\fB\-\-force-uchange\fP"
++This option causes rsync to disable user-immutable flags on files and
++directories that are being updated or deleted on the receiving side.  It
++does not try to affect system flags.  This option overrides
++\fB\-\-force-change\fP and \fB\-\-force-schange\fP.
++.IP "\fB\-\-force-schange\fP"
++This option causes rsync to disable system-immutable flags on files and
++directories that are being updated or deleted on the receiving side.  It
++does not try to affect user flags.  This option overrides
++\fB\-\-force-change\fP and \fB\-\-force-uchange\fP.
+ .IP "\fB\-\-chmod=CHMOD\fP"
+ This option tells rsync to apply one or more comma-separated "chmod" modes
+ to the permission of the files in the transfer.  The resulting value is
+@@ -2082,8 +2110,8 @@ This option takes the behavior of the (i
+ \fB\-\-ignore-missing-args\fP option a step farther: each missing arg
+ will become a deletion request of the corresponding destination file on the
+ receiving side (should it exist).  If the destination file is a non-empty
+-directory, it will only be successfully deleted if \fB\-\-force\fP or
+-\fB\-\-delete\fP are in effect.  Other than that, this option is
++directory, it will only be successfully deleted if \fB\-\-force-delete\fP
++or \fB\-\-delete\fP are in effect.  Other than that, this option is
+ independent of any other type of delete processing.
+ .IP
+ The missing source files are represented by special file-list entries which
+@@ -2091,13 +2119,13 @@ display as a "\fB*missing\fP" entry in t
+ .IP "\fB\-\-ignore-errors\fP"
+ Tells \fB\-\-delete\fP to go ahead and delete files even when there are
+ I/O errors.
+-.IP "\fB\-\-force\fP"
++.IP "\fB\-\-force-delete\fP, \fB\-\-force\fP"
+ This option tells rsync to delete a non-empty directory when it is to be
+ replaced by a non-directory.  This is only relevant if deletions are not
+ active (see \fB\-\-delete\fP for details).
+ .IP
+-Note for older rsync versions: \fB\-\-force\fP used to still be required when
+-using \fB\-\-delete-after\fP, and it used to be non-functional unless the
++Note that some older rsync versions used to require \fB\-\-force\fP when using
++\fB\-\-delete-after\fP, and it used to be non-functional unless the
+ \fB\-\-recursive\fP option was also enabled.
+ .IP "\fB\-\-max-delete=NUM\fP"
+ This tells rsync not to delete more than NUM files or directories.  If that
+@@ -3159,7 +3187,7 @@ version 2.6.7 (you can use \fB\-vv\fP wi
+ also turns on the output of other verbose messages).
+ .IP
+ The "%i" escape has a cryptic output that is 11 letters long.  The general
+-format is like the string \fBYXcstpoguax\fP, where \fBY\fP is replaced by the type
++format is like the string \fBYXcstpoguaxf\fP, where \fBY\fP is replaced by the type
+ of update being done, \fBX\fP is replaced by the file-type, and the other
+ letters represent attributes that may be output if they are being modified.
+ .IP
+diff -Nurp a/rsync.1.html b/rsync.1.html
+--- a/rsync.1.html
++++ b/rsync.1.html
+@@ -438,6 +438,7 @@ has its own detailed description later i
+ --keep-dirlinks, -K      treat symlinked dir on receiver as dir
+ --hard-links, -H         preserve hard links
+ --perms, -p              preserve permissions
++--fileflags              preserve file-flags (aka chflags)
+ --executability, -E      preserve executability
+ --chmod=CHMOD            affect file and/or directory permissions
+ --acls, -A               preserve ACLs (implies --perms)
+@@ -479,7 +480,10 @@ has its own detailed description later i
+ --ignore-missing-args    ignore missing source args without error
+ --delete-missing-args    delete missing source args from destination
+ --ignore-errors          delete even if there are I/O errors
+---force                  force deletion of dirs even if not empty
++--force-delete           force deletion of directories even if not empty
++--force-change           affect user-/system-immutable files/dirs
++--force-uchange          affect user-immutable files/dirs
++--force-schange          affect system-immutable files/dirs
+ --max-delete=NUM         don't delete more than NUM files
+ --max-size=SIZE          don't transfer any file larger than SIZE
+ --min-size=SIZE          don't transfer any file smaller than SIZE
+@@ -806,7 +810,8 @@ section.</p>
+ <p>This is equivalent to <code>-rlptgoD</code>.  It is a quick way of saying you want
+ recursion and want to preserve almost everything.  Be aware that it does
+ <strong>not</strong> include preserving ACLs (<code>-A</code>), xattrs (<code>-X</code>), atimes (<code>-U</code>),
+-crtimes (<code>-N</code>), nor the finding and preserving of hardlinks (<code>-H</code>).</p>
++crtimes (<code>-N</code>), nor the finding and preserving of hardlinks (<code>-H</code>).
++It also does <strong>not</strong> imply <a href="#opt--fileflags"><code>--fileflags</code></a>.</p>
+ <p>The only exception to the above equivalence is when <a href="#opt--files-from"><code>--files-from</code></a>
+ is specified, in which case <a href="#opt-r"><code>-r</code></a> is not implied.</p>
+ </dd>
+@@ -1234,7 +1239,7 @@ to non-directories to be affected, as th
+ <p>Without this option, if the sending side has replaced a directory with a
+ symlink to a directory, the receiving side will delete anything that is in
+ the way of the new symlink, including a directory hierarchy (as long as
+-<a href="#opt--force"><code>--force</code></a> or <a href="#opt--delete"><code>--delete</code></a> is in effect).</p>
++<a href="#opt--force-delete"><code>--force-delete</code></a> or <a href="#opt--delete"><code>--delete</code></a> is in effect).</p>
+ <p>See also <a href="#opt--keep-dirlinks"><code>--keep-dirlinks</code></a> for an analogous option for the
+ receiving side.</p>
+ <p><code>--copy-dirlinks</code> applies to all symlinks to directories in the source.  If
+@@ -1421,6 +1426,37 @@ those used by <a href="#opt--fake-super"
+ This &quot;copy all xattrs&quot; mode cannot be used with <a href="#opt--fake-super"><code>--fake-super</code></a>.</p>
+ </dd>
+ 
++<dt id="opt--fileflags"><code>--fileflags</code><a href="#opt--fileflags" class="tgt"></a></dt><dd>
++<p>This option causes rsync to update the file-flags to be the same as the
++source files and directories (if your OS supports the <strong>chflags</strong>(2) system
++call).   Some flags can only be altered by the super-user and some might
++only be unset below a certain secure-level (usually single-user mode). It
++will not make files alterable that are set to immutable on the receiver.
++To do that, see <a href="#opt--force-change"><code>--force-change</code></a>, <a href="#opt--force-uchange"><code>--force-uchange</code></a>, and
++<a href="#opt--force-schange"><code>--force-schange</code></a>.</p>
++</dd>
++
++<dt id="opt--force-change"><code>--force-change</code><a href="#opt--force-change" class="tgt"></a></dt><dd>
++<p>This option causes rsync to disable both user-immutable and
++system-immutable flags on files and directories that are being updated or
++deleted on the receiving side.  This option overrides
++<a href="#opt--force-uchange"><code>--force-uchange</code></a> and <a href="#opt--force-schange"><code>--force-schange</code></a>.</p>
++</dd>
++
++<dt id="opt--force-uchange"><code>--force-uchange</code><a href="#opt--force-uchange" class="tgt"></a></dt><dd>
++<p>This option causes rsync to disable user-immutable flags on files and
++directories that are being updated or deleted on the receiving side.  It
++does not try to affect system flags.  This option overrides
++<a href="#opt--force-change"><code>--force-change</code></a> and <a href="#opt--force-schange"><code>--force-schange</code></a>.</p>
++</dd>
++
++<dt id="opt--force-schange"><code>--force-schange</code><a href="#opt--force-schange" class="tgt"></a></dt><dd>
++<p>This option causes rsync to disable system-immutable flags on files and
++directories that are being updated or deleted on the receiving side.  It
++does not try to affect user flags.  This option overrides
++<a href="#opt--force-change"><code>--force-change</code></a> and <a href="#opt--force-uchange"><code>--force-uchange</code></a>.</p>
++</dd>
++
+ <dt id="opt--chmod"><code>--chmod=CHMOD</code><a href="#opt--chmod" class="tgt"></a></dt><dd>
+ <p>This option tells rsync to apply one or more comma-separated &quot;chmod&quot; modes
+ to the permission of the files in the transfer.  The resulting value is
+@@ -1904,8 +1940,8 @@ is no longer there.</p>
+ <a href="#opt--ignore-missing-args"><code>--ignore-missing-args</code></a> option a step farther: each missing arg
+ will become a deletion request of the corresponding destination file on the
+ receiving side (should it exist).  If the destination file is a non-empty
+-directory, it will only be successfully deleted if <a href="#opt--force"><code>--force</code></a> or
+-<a href="#opt--delete"><code>--delete</code></a> are in effect.  Other than that, this option is
++directory, it will only be successfully deleted if <a href="#opt--force-delete"><code>--force-delete</code></a>
++or <a href="#opt--delete"><code>--delete</code></a> are in effect.  Other than that, this option is
+ independent of any other type of delete processing.</p>
+ <p>The missing source files are represented by special file-list entries which
+ display as a &quot;<code>*missing</code>&quot; entry in the <a href="#opt--list-only"><code>--list-only</code></a> output.</p>
+@@ -1916,12 +1952,12 @@ display as a &quot;<code>*missing</code>
+ I/O errors.</p>
+ </dd>
+ 
+-<dt id="opt--force"><code>--force</code><a href="#opt--force" class="tgt"></a></dt><dd>
++<span id="opt--force"></span><dt id="opt--force-delete"><code>--force-delete</code>, <code>--force</code><a href="#opt--force-delete" class="tgt"></a></dt><dd>
+ <p>This option tells rsync to delete a non-empty directory when it is to be
+ replaced by a non-directory.  This is only relevant if deletions are not
+ active (see <a href="#opt--delete"><code>--delete</code></a> for details).</p>
+-<p>Note for older rsync versions: <code>--force</code> used to still be required when
+-using <a href="#opt--delete-after"><code>--delete-after</code></a>, and it used to be non-functional unless the
++<p>Note that some older rsync versions used to require <code>--force</code> when using
++<a href="#opt--delete-after"><code>--delete-after</code></a>, and it used to be non-functional unless the
+ <a href="#opt--recursive"><code>--recursive</code></a> option was also enabled.</p>
+ </dd>
+ 
+@@ -2894,7 +2930,7 @@ files will also be output, but only if t
+ version 2.6.7 (you can use <code>-vv</code> with older versions of rsync, but that
+ also turns on the output of other verbose messages).</p>
+ <p>The &quot;%i&quot; escape has a cryptic output that is 11 letters long.  The general
+-format is like the string <code>YXcstpoguax</code>, where <strong>Y</strong> is replaced by the type
++format is like the string <code>YXcstpoguaxf</code>, where <strong>Y</strong> is replaced by the type
+ of update being done, <strong>X</strong> is replaced by the file-type, and the other
+ letters represent attributes that may be output if they are being modified.</p>
+ <p>The update types that replace the <strong>Y</strong> are as follows:</p>
+diff -Nurp a/rsyncd.conf.5 b/rsyncd.conf.5
+--- a/rsyncd.conf.5
++++ b/rsyncd.conf.5
+@@ -1,5 +1,5 @@
+ .TH "rsyncd.conf" "5" "15 Jan 2025" "rsyncd.conf from rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
++.\" prefix=/usr/local
+ .P
+ .SH "NAME"
+ .P
+@@ -73,11 +73,11 @@ and a single line something like this to
+ .RS 4
+ .P
+ .nf
+-rsync   stream  tcp     nowait  root   /usr/bin/rsync rsyncd --daemon
++rsync   stream  tcp     nowait  root   /usr/local/bin/rsync rsyncd --daemon
+ .fi
+ .RE
+ .P
+-Replace "/usr/bin/rsync" with the path to where you have rsync installed on
++Replace "/usr/local/bin/rsync" with the path to where you have rsync installed on
+ your system.  You will then need to send inetd a HUP signal to tell it to
+ reread its config file.
+ .P
+diff -Nurp a/rsyncd.conf.5.html b/rsyncd.conf.5.html
+--- a/rsyncd.conf.5.html
++++ b/rsyncd.conf.5.html
+@@ -77,10 +77,10 @@ command &quot;<code>rsync --daemon</code
+ </blockquote>
+ <p>and a single line something like this to /etc/inetd.conf:</p>
+ <blockquote>
+-<pre><code>rsync   stream  tcp     nowait  root   /usr/bin/rsync rsyncd --daemon
++<pre><code>rsync   stream  tcp     nowait  root   /usr/local/bin/rsync rsyncd --daemon
+ </code></pre>
+ </blockquote>
+-<p>Replace &quot;/usr/bin/rsync&quot; with the path to where you have rsync installed on
++<p>Replace &quot;/usr/local/bin/rsync&quot; with the path to where you have rsync installed on
+ your system.  You will then need to send inetd a HUP signal to tell it to
+ reread its config file.</p>
+ <p>Note that you should <strong>not</strong> send the rsync daemon a HUP signal to force it to
+diff -Nurp a/rsync-ssl.1 b/rsync-ssl.1
+--- a/rsync-ssl.1
++++ b/rsync-ssl.1
+@@ -1,5 +1,5 @@
+ .TH "rsync-ssl" "1" "15 Jan 2025" "rsync-ssl from rsync 3.4.1" "User Commands"
+-.\" prefix=/usr
++.\" prefix=/usr/local
+ .P
+ .SH "NAME"
+ .P
